@@ -33,7 +33,7 @@ fi
 if [[ -f Makefile || -f makefile ]]
 then
   echo "-----> Making..."
-  if make | indent
+  if make 2>&1 | indent
   then
     echo "-----> Compliation succeeded, trying to install"
     make install 2>&1 | indent
