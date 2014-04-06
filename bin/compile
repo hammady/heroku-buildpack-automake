@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# bin/compile BUILD_DIR CACHE_DIR
+
+BUILD_DIR=$1
+CACHE_DIR=$2
+
+indent() {
+  sed 's/^/       /'
+}
+
+cd $BUILD_DIR
+
+if [[ -f Makefile.am || -f makefile.am ]]
+then
+  echo "-----> Automaking..."
+  automake 2>&1 | indent
+fi
+
+[ -f configure.scan ] && mv configure.scan configure.ac
+
+if [[ -f configure.ac || -f configure.in ]]
+then
+  echo "-----> Autoconfiguring..."
+  autoconf 2>&1 | indent
+fi
+
+if [ -f configure ]
+then
+  echo "-----> Configuring..."
+  ./configure 2>&1 | indent
+fi
+
+if [[ -f Makefile || -f makefile ]]
+then
+  echo "-----> Making..."
+  if make | indent
+  then
+    echo "-----> Compliation succeeded, trying to install"
+    make install 2>&1 | indent
+  else
+    echo "-----> Compliation error"
+    exit 1
+  fi
+fi
+
+exit 0

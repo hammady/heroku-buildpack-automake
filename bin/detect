@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# bin/detect BUILD_DIR
+
+BUILD_DIR=$1
+
+[[ -f $BUILD_DIR/Makefile || -f $BUILD_DIR/makefile || -f $BUILD_DIR/Makefile.am || -f $BUILD_DIR/makefile.am ]] || exit 1
+
+echo "Makefile" 
