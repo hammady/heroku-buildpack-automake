@@ -1,8 +1,18 @@
 # Heroku Buildpack: Automake
 
-Build using this buildpack if you have a hierarchy of Makefile-based programs. It will execute automake and autoconf if
-Makefile.am, configure.ac are found, respectively. Finally it will execute make then make install.
-To make this work create a Makefile.am in the top level directory listing all subdirectories you want to make in order.
-For a full reference on how to use subdirectories, check the [GNU automake manual](http://www.gnu.org/software/automake/manual/html_node/Subdirectories.html).
+Build using this buildpack if you have a hierarchy of Makefile-based programs. 
+It will execute make then make install for the top-level directory.
+To build complex projects that constist of subdirectories having their own Makefiles,
+You can list subdirectories in the root Makefile as stated in this [tutorial](https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html).
 
+## Example Makefile to build subdirs:
+
+<pre>
+SUBDIRS = foo bar
+
+subdirs:
+        for dir in $(SUBDIRS); do \
+                $(MAKE) -C $$dir; \
+        done
+</pre>
 

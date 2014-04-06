@@ -10,20 +10,6 @@ indent() {
 
 cd $BUILD_DIR
 
-if [[ -f Makefile.am || -f makefile.am ]]
-then
-  echo "-----> Automaking..."
-  automake 2>&1 | indent
-fi
-
-[ -f configure.scan ] && mv configure.scan configure.ac
-
-if [[ -f configure.ac || -f configure.in ]]
-then
-  echo "-----> Autoconfiguring..."
-  autoconf 2>&1 | indent
-fi
-
 if [ -f configure ]
 then
   echo "-----> Configuring..."
