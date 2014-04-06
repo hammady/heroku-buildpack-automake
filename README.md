@@ -1,4 +1,4 @@
-# Heroku Buildpack: Automake
+# Heroku Buildpack: make
 
 Build using this buildpack if you have a hierarchy of Makefile-based programs. 
 It will execute make then make install for the top-level directory.
