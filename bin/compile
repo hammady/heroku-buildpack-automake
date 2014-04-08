@@ -27,7 +27,7 @@ then
     config=`echo $dirspec | cut -d: -f2`
     [ "$subdir" == "$config" ] && config=
     [ -d "$subdir" ] || die "Subdirectory $subdir does not exist, please fix your MMakefile, aborting"
-    cd "$BUILD_DIR/$subdir"
+    cd "$subdir"
 
     # configuring
     if [ -f configure ]; then
@@ -40,6 +40,8 @@ then
     arrow "Making in $subdir..."
     make 2>&1 || die "Compilation failed in $subdir, aborting"
     arrow "Compliation succeeded in $subdir"
+
+    cd -
   done
 fi
 
