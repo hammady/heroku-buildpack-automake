@@ -9,11 +9,11 @@ indent() {
 }
 
 arrow() {
-  echo "-----> $1" >&2
+  echo; echo "-----> $1"
 }
 
 die() {
-  echo "!     $1" >&2
+  echo; echo "!     $1"
   exit 1
 }
 
@@ -41,6 +41,6 @@ then
     make 2>&1 || die "Compilation failed in $subdir, aborting"
     arrow "Compliation succeeded in $subdir"
   done
-fi | indent
+fi
 
 exit 0
