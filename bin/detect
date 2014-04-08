@@ -3,6 +3,6 @@
 
 BUILD_DIR=$1
 
-[[ -f $BUILD_DIR/Makefile || -f $BUILD_DIR/makefile || -f $BUILD_DIR/Makefile.am || -f $BUILD_DIR/makefile.am ]] || exit 1
+[[ -f $BUILD_DIR/MMakefile ]] || exit 1
 
-echo "Makefile" 
+echo "Multi-Makefile"

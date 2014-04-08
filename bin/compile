@@ -8,25 +8,39 @@ indent() {
   sed 's/^/       /'
 }
 
+arrow() {
+  echo "-----> $1" >&2
+}
+
+die() {
+  echo "!     $1" >&2
+  exit 1
+}
+
 cd $BUILD_DIR
 
-if [ -f configure ]
+if [[ -f MMakefile ]]
 then
-  echo "-----> Configuring..."
-  ./configure 2>&1 | indent
-fi
+  cat MMakefile | while read dirspec; do
+    # getting subdir param and validating it
+    subdir=`echo $dirspec | cut -d: -f1`
+    config=`echo $dirspec | cut -d: -f2`
+    [ "$subdir" == "$config" ] && config=
+    [ -d "$subdir" ] || die "Subdirectory $subdir does not exist, please fix your MMakefile, aborting"
+    cd "$BUILD_DIR/$subdir"
 
-if [[ -f Makefile || -f makefile ]]
-then
-  echo "-----> Making..."
-  if make 2>&1 | indent
-  then
-    echo "-----> Compliation succeeded, trying to install"
-    make install 2>&1 | indent
-  else
-    echo "-----> Compliation error"
-    exit 1
-  fi
-fi
+    # configuring
+    if [ -f configure ]; then
+      arrow "Configuring in $subdir..."
+      ./configure $config 2>&1 || die "Error configuring in $subdir, aborting"
+      arrow "Configuration succeeded in $subdir"
+    fi
+
+    # making
+    arrow "Making in $subdir..."
+    make 2>&1 || die "Compilation failed in $subdir, aborting"
+    arrow "Compliation succeeded in $subdir"
+  done
+fi | indent
 
 exit 0
