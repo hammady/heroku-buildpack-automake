@@ -1,4 +1,4 @@
-ldpack: MultiMake
+# Heroku Buildpack: MultiMake
 
 Build using this buildpack if you have several subdirectories containing Makefile-based programs. You start by defining these subdirectories in a top-level `MMakefile` file along
 with their configure options. It will execute `./configure` with your defined options then `make`
