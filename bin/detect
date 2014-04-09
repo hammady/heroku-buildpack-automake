@@ -5,4 +5,4 @@ BUILD_DIR=$1
 
 [[ -f $BUILD_DIR/MMakefile ]] || exit 1
 
-echo "Multi-Makefile"
+echo "MultiMake"
