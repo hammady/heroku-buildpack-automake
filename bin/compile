@@ -21,7 +21,7 @@ cd $BUILD_DIR
 
 if [[ -f MMakefile ]]
 then
-  echo | cat MMakefile - | while read dirspec; do
+  echo | cat MMakefile - | grep -v '^\s*$' | while read dirspec; do
     # getting subdir param and validating it
     subdir=`echo $dirspec | cut -d: -f1`
     config=`echo $dirspec | cut -d: -f2`
