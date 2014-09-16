@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# bin/compile BUILD_DIR CACHE_DIR
+# bin/compile BUILD_DIR CACHE_DIR ENV_DIR
 
 BUILD_DIR=$1
 CACHE_DIR=$2
+ENV_DIR=$3
 
 indent() {
   sed 's/^/       /'
@@ -17,34 +18,76 @@ die() {
   exit 1
 }
 
+export_env() {
+  if [ -f "$ENV_DIR/MULTIMAKE_CACHE_FILES" ]; then
+    export "CACHE_FILES=$(cat $ENV_DIR/MULTIMAKE_CACHE_FILES)"
+  fi
+}
+
+export_env
+
+# create cache dir
+if [ "$CACHE_FILES" != "" ]; then
+  [ -d "$CACHE_DIR" ] || mkdir "$CACHE_DIR" || die "Error creating cache directory at $CACHE_DIR, aborting"
+fi
+
 cd $BUILD_DIR
 mkdir -p __prefix__
 
 if [[ -f MMakefile ]]
 then
-  echo | cat MMakefile - | grep -v '^\s*$' | while read dirspec; do
-    # getting subdir param and validating it
-    subdir=`echo $dirspec | cut -d: -f1`
-    config=`echo $dirspec | cut -d: -f2`
-    [ "$subdir" == "$config" ] && config=
-    [ -d "$subdir" ] || die "Subdirectory $subdir does not exist, please fix your MMakefile, aborting"
-    cd "$subdir"
+  # checking cache
+  cache_ok=
+  if [ "$CACHE_FILES" != "" ]; then
+    cache_ok=1
+    while read path; do
+      [ ! -f "$CACHE_DIR"/"$path" ] && export cache_ok=
+    done < <(echo "$CACHE_FILES" | tr ";" "\n")
+  fi
 
-    # configuring
-    if [ -f configure ]; then
-      echo $config | grep -q prefix || config="$config --prefix=$BUILD_DIR/__prefix__"
-      arrow "Configuring in $subdir with $config..."
-      ./configure $config 2>&1 || die "Error configuring in $subdir, aborting"
-      arrow "Configuration succeeded in $subdir"
+  if [ "$cache_ok" == "" ]; then
+    # cache not ok, process MMakefile
+    cat MMakefile | while read dirspec; do
+      # getting subdir param and validating it
+      subdir=`echo $dirspec | cut -d: -f1`
+      config=`echo $dirspec | cut -d: -f2`
+      [ "$subdir" == "$config" ] && config=
+      [ -d "$subdir" ] || die "Subdirectory $subdir does not exist, please fix your MMakefile, aborting"
+      cd "$subdir"
+
+      # configuring
+      if [ -f configure ]; then
+        arrow "Configuring in $subdir..."
+        ./configure $config 2>&1 || die "Error configuring in $subdir, aborting"
+        arrow "Configuration succeeded in $subdir"
+      fi
+
+      # making
+      arrow "Making in $subdir..."
+      make 2>&1 || die "Compilation failed in $subdir, aborting"
+      arrow "Compliation succeeded in $subdir"
+
+      cd -
+    done
+
+    # store cache for next builds
+    if [ "$CACHE_FILES" != "" ]; then
+      arrow "Caching artifacts for next builds..."
+      echo "$CACHE_FILES" | tr ";" "\n" | while read path; do
+        # to test the following on OSX, brew install coreutils then replace cp by gcp
+        cp --parents -v "$path" "$CACHE_DIR"
+      done
     fi
-
-    # making
-    arrow "Making in $subdir..."
-    make 2>&1 || die "Compilation failed in $subdir, aborting"
-    arrow "Compliation succeeded in $subdir"
-
+  else
+    # cache ok, copy from cache
+    arrow "Copying cached artifacts from previous builds..."
+    cd $CACHE_DIR
+    echo "$CACHE_FILES" | tr ";" "\n" | while read path; do
+      # to test the following on OSX, brew install coreutils then replace cp by gcp
+      cp --parents -v "$path" "$BUILD_DIR"
+    done
     cd -
-  done
+  fi
 fi
 
 exit 0
