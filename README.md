@@ -31,3 +31,16 @@ nginx: --with-pcre=../pcre
 This will first builds `pcre` with default options then will configure nginx with the pcre that was just compiled.
 </pre>
 
+## Caching
+It is possible with MultiMake to cache build artifacts and reuse them across builds. By default MultiMake will build each subdirectory as described in MMakefile. To instruct it to store build outputs (and later reuse them) set the environment variable `MULTIMAKE_CACHE_FILES` to list paths of files to cache in semicolon separated list. For example:
+
+<pre>
+heroku config:set MULTIMAKE_CACHE_FILES='svm_light/svm_classify;nginx-1.5.13/objs/nginx'
+</pre>
+
+will save `svm_light/svm_classify` and `nginx-1.5.13/objs/nginx` after building in a cache directory that is maintained by Heroku across builds. The next build (provided you still have the environment variable) will look for these 2 files in the cache and if found will skip the whole build process in all subdirectories and copies them directly to the build directory. To disable cache at any time, just remove the environment variable and builds will proceed from scratch.
+
+If you want to purge/override the cache you have 2 options:
+
+- Append a fake path to the environment variable so that MultiMake won't find all paths cached, and will trigger the build process then copies these paths to the cache directory, effectively replacing the old cache.
+- Install [Heroku Repo plugin](https://github.com/heroku/heroku-repo) and use it to purge the whole cache directory.
