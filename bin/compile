@@ -22,6 +22,11 @@ export_env() {
   if [ -f "$ENV_DIR/MULTIMAKE_CACHE_FILES" ]; then
     export "CACHE_FILES=$(cat $ENV_DIR/MULTIMAKE_CACHE_FILES)"
   fi
+  for e in $ENV_DIR/*; do
+    if [ -f "$e" ]; then
+      export "$(basename $e)=$(cat $e)"
+    fi
+  done
 }
 
 export_env
